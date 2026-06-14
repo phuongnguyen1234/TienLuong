@@ -1,0 +1,31 @@
+.input_form {
+  border: 1px solid var(--border-control-normal);
+  height: 32px;
+  padding: 0 16px;
+  outline: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--border-radius-base);
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+
+.input_form:hover {
+  border-color: var(--border-control-hover);
+}
+
+.input--error {
+  border-color: var(--border-control-error) !important;
+}
+
+.input_form:focus {
+  border-color: var(--border-control-hover);
+}
+
+/* Utility classes for text colors based on variables */
+.text-error {
+  color: var(--color-error);
+}
+.text-success {
+  color: var(--color-success);
+}

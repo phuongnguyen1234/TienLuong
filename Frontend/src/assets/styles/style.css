@@ -1,0 +1,107 @@
+@import url('https://testcdnamisapp.misacdn.net/fonts/font.inter.css');
+@import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css');
+@import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css');
+@import url('./variables.css');
+@import url('./controls.css');
+@import url('./main.css');
+/* Import các file bổ sung nếu dự án lớn hơn */
+/* @import url('./animations.css'); */
+/* @import url('./utilities.css'); */
+
+/* Global Reset & Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter';
+  margin: 0;
+  padding: 0;
+  color: var(--color-text-main);
+  background-color: var(--bg-app);
+}
+
+/* --- Custom Scrollbar (Theo ComponentRedesign.md - Mục 8) --- */
+/* Áp dụng cho Chrome, Safari, Edge và các trình duyệt Webkit */
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-scrollbar); /* Trạng thái Normal */
+  background-clip: padding-box;
+  border: 4px solid transparent; /* Tạo khoảng trống 4px xung quanh thumb 6px */
+  border-radius: 10px; /* Bo tròn để trông giống viên thuốc */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-scrollbar-hover); /* Trạng thái Hover */
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-scrollbar-pressed); /* Trạng thái Press */
+}
+
+/* Hiện và tùy chỉnh nút mũi tên để không bị "nhảy" kích thước */
+::-webkit-scrollbar-button {
+  display: block;
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  /* Mẹo quan trọng: Dùng border để ép vùng vẽ background chỉ còn 6px ở giữa */
+  border: 4px solid transparent;
+  background-clip: padding-box;
+  border-radius: 10px;
+}
+
+/* Hover vào nút mũi tên */
+::-webkit-scrollbar-button:hover {
+  background-color: #f2f2f2;
+}
+
+/* Mũi tên Lên (Vertical Decrement) */
+::-webkit-scrollbar-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%239e9e9e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 15l-6-6-6 6'/%3E%3C/svg%3E");
+}
+
+/* Mũi tên Xuống (Vertical Increment) */
+::-webkit-scrollbar-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%239e9e9e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* Mũi tên Trái (Horizontal Decrement) */
+::-webkit-scrollbar-button:horizontal:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%239e9e9e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 18l-6-6 6-6'/%3E%3C/svg%3E");
+}
+
+/* Mũi tên Phải (Horizontal Increment) */
+::-webkit-scrollbar-button:horizontal:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%239e9e9e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E");
+}
+
+/* Ẩn các nút phụ không cần thiết trên một số trình duyệt */
+::-webkit-scrollbar-button:start:increment,
+::-webkit-scrollbar-button:end:decrement {
+  display: none;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Hỗ trợ ẩn thông báo Evaluation của DevExtreme */
+.dx-license-warning {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}

@@ -1,0 +1,13 @@
+.main-content {
+  position: absolute;
+  top: var(--header-height);
+  left: var(--sidebar-width-collapsed);
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-app);
+  transition: left 0.3s ease;
+}
+
+.main-content.content_expanded {
+  left: var(--sidebar-width-expanded);
+}

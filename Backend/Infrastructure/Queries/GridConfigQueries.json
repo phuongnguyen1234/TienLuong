@@ -1,0 +1,4 @@
+{
+  "GetConfig": "proc_get_pa_grid_config",
+  "UpsertConfig": "proc_upsert_pa_grid_config"
+}

@@ -1,0 +1,17 @@
+# Node
+node_modules
+dist
+
+# .NET
+bin
+Backend/Api/obj/
+Backend/Core/obj/
+Backend/Infrastructure/obj/
+Backend/.vs/
+
+# Env
+.env
+appsettings.Development.json
+
+# OS
+.DS_Store

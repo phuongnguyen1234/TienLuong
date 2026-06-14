@@ -1,0 +1,4 @@
+{
+  "GetPaging": "proc_get_pa_salary_composition_system_paging",
+  "BulkClone": "proc_bulk_clone_system_salary_composition"
+}

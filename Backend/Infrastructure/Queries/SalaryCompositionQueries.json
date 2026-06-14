@@ -1,0 +1,12 @@
+{
+  "GetById": "proc_get_pa_salary_composition_by_id",
+  "GetPaging": "proc_get_pa_salary_composition_paging",
+  "Insert": "proc_insert_pa_salary_composition",
+  "Update": "proc_update_pa_salary_composition",
+  "Delete": "proc_delete_pa_salary_composition",
+  "BulkDelete": "proc_bulk_delete_pa_salary_composition",
+  "BulkUpdateStatus": "proc_bulk_update_status_pa_salary_composition",
+  "UpsertOrganization": "proc_upsert_salarycomposition_organization",
+  "GetLookup": "proc_get_pa_salary_composition_lookup",
+  "CheckCode": "proc_check_salary_composition_code_duplicate"
+}

@@ -1,0 +1,54 @@
+:root {
+  --border-control-normal: #d5d7da;
+  --border-control-hover: #34b057;
+  --border-control-error: #f04438;
+
+  /* Semantic Colors */
+  --color-primary: #0e9a62;
+  --color-primary-hover: #0a724b;
+  --color-primary-pressed: #085c3c; /* Darkened from hover color */
+  --color-success: #34b057;
+  --color-warning: #f79009;
+  --color-error: #e54848;
+  --color-icon: #717680;
+  --color-text-main: #212121;
+  --color-text-secondary: #666666;
+  --color-placeholder: #9e9e9e;
+  --bg-app: #f2f2f2;
+  --bg-white: #ffffff;
+  --bg-table-header: #f6f6f6;
+  --bg-sidebar-selected: #e6f5ef;
+  --bg-table-hover: #cdeadf;
+  --item-hover: #e9eaeb;
+  --button-border: #d5d7da;
+
+  /* Layout Dimensions */
+  --header-height: 48px;
+  --sidebar-width-collapsed: 60px;
+  --sidebar-width-expanded: 235px;
+
+  /* Spacing */
+  --spacing-base: 8px;
+  --border-radius-base: 8px;
+
+  /* Z-Index System */
+  --z-index-base: 1;
+  --z-index-table-pinned: 5;
+  --z-index-table-header: 10;
+  --z-index-table-action: 20;
+  --z-index-overlay: 1000;
+  --z-index-modal: 1100;
+  --z-index-dropdown: 3000;
+  --z-index-loading: 4000;
+  --z-index-toast: 9999;
+
+  /* Scrollbar */
+  --scrollbar-size: 14px; /* 6px thumb + 4px gap mỗi bên */
+  --color-scrollbar: #e9eaeb;
+  --color-scrollbar-hover: #757575;
+  --color-scrollbar-pressed: #666666;
+
+  /* Tooltip */
+  --color-tooltip-bg: #353535;
+  --color-tooltip-text: #ffffff;
+}
