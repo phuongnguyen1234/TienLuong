@@ -26,7 +26,7 @@ namespace Api.Controllers
             [FromQuery] int pageSize = 15)
         {
             var result = await _systemService.GetPagingAsync(searchTerm, filters, pageIndex, pageSize);
-            return Ok(new Response(true, null, 200, result));
+            return Success(result);
         }
 
         /// <summary>
@@ -37,7 +37,27 @@ namespace Api.Controllers
         {
             var result = await _systemService.BulkCloneAsync(ids);
             var message = $"Đã đưa thành công {result} thành phần lương vào sử dụng.";
-            return Ok(new Response(true, message, 200, result));
+            return Success(result, message);
+        }
+
+        /// <summary>
+        /// Lấy cấu hình cột của grid
+        /// </summary>
+        [HttpGet("grid-config/{gridKey}")]
+        public async Task<ActionResult<Response>> GetGridConfig([FromRoute] string gridKey)
+        {
+            var result = await _systemService.GetGridConfigAsync(gridKey);
+            return Success(result);
+        }
+
+        /// <summary>
+        /// Lưu cấu hình cột của grid (Thêm mới hoặc Cập nhật)
+        /// </summary>
+        [HttpPost("grid-config")]
+        public async Task<ActionResult<Response>> SaveGridConfig([FromBody] GridConfigDTO configDto)
+        {
+            var result = await _systemService.SaveGridConfigAsync(configDto);
+            return Success(result, "Lưu cấu hình thành công");
         }
     }
 }

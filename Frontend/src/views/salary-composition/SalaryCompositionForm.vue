@@ -409,7 +409,7 @@ import Select from '@/components/controls/selects/Select.vue'
 import Checkbox from '@/components/controls/checkboxes/Checkbox.vue'
 import RadioGroup from '@/components/controls/radio-buttons/RadioGroup.vue'
 import Radio from '@/components/controls/radio-buttons/Radio.vue'
-import InputFormula from '@/components/controls/inputs/InputFormula.vue' // Giả định dựa trên template
+import InputFormula from '@/components/controls/inputs/InputFormula.vue'
 import Tooltip from '@/components/base/Tooltip.vue'
 import InputArea from '@/components/controls/inputs/InputArea.vue'
 import PencilIcon from '@/components/icons/PencilIcon.vue'

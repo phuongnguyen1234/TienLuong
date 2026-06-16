@@ -85,10 +85,12 @@ import { FilterOperation } from '@/models/filter-operation.js'
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
+  // Danh sách các cột cho phép lọc, được truyền từ component cha (thường là kết quả map từ columnsConfig)
   columns: {
     type: Array,
     default: () => [],
   },
+  // Danh sách các filter đang thực sự được áp dụng (dùng để khôi phục trạng thái khi mở drawer)
   appliedFilters: {
     type: Array,
     default: () => [],
@@ -97,10 +99,15 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'apply'])
 
+// Từ khóa tìm kiếm tên trường lọc trong danh sách
 const searchText = ref('')
 
+// Trạng thái nội bộ của bộ lọc, chứa thông tin chi tiết: checked, operator, value cho từng cột
 const filterState = ref([])
 
+/**
+ * Danh sách toán tử dành cho kiểu chuỗi (Text/String)
+ */
 const stringOperations = [
   { value: FilterOperation.Contains, label: 'Chứa' },
   { value: FilterOperation.NotContains, label: 'Không chứa' },
@@ -112,6 +119,9 @@ const stringOperations = [
   { value: FilterOperation.NotEmpty, label: 'Không trống' },
 ]
 
+/**
+ * Danh sách toán tử dành cho kiểu Enum hoặc Boolean
+ */
 const enumOperations = [
   { value: FilterOperation.Equals, label: 'Bằng' },
   { value: FilterOperation.NotEqual, label: 'Khác' },
@@ -119,9 +129,15 @@ const enumOperations = [
   { value: FilterOperation.NotEmpty, label: 'Không trống' },
 ]
 
+/**
+ * Watcher thực hiện đồng bộ hóa dữ liệu từ props vào filterState nội bộ.
+ * logic: Kết hợp danh sách 'columns' mặc định với 'appliedFilters' hiện có để đánh dấu 'checked'
+ * và điền lại các giá trị operator/value người dùng đã chọn trước đó.
+ */
 watch(
   () => [props.columns, props.appliedFilters],
   ([newCols, newAppliedFilters]) => {
+    // Tạo Map để lookup filter đang áp dụng nhanh hơn
     const appliedMap = new Map(newAppliedFilters.map((f) => [f.key, f]))
 
     filterState.value = newCols.map((col) => {
@@ -129,6 +145,7 @@ watch(
       let defaultValue
       let defaultOperator
 
+      // Xác định giá trị mặc định dựa trên loại dữ liệu (DataType)
       if (col.key === 'ScNature') {
         defaultValue = []
         defaultOperator = FilterOperation.Equals
@@ -164,12 +181,19 @@ watch(
   { immediate: true, deep: true },
 )
 
+/**
+ * Computed property trả về danh sách các trường lọc đã được filter qua thanh tìm kiếm (searchText)
+ */
 const filteredColumns = computed(() => {
   if (!searchText.value) return filterState.value
   const lower = searchText.value.toLowerCase()
   return filterState.value.filter((col) => col.label.toLowerCase().includes(lower))
 })
 
+/**
+ * Đưa tất cả các trường lọc về trạng thái chưa chọn (unchecked) và reset giá trị về mặc định.
+ * Sau đó tự động gọi applyFilters để cập nhật lại danh sách dữ liệu ngoài màn hình chính.
+ */
 function resetFilters() {
   filterState.value.forEach((item) => {
     item.checked = false
@@ -188,6 +212,10 @@ function resetFilters() {
   applyFilters()
 }
 
+/**
+ * Lọc ra những trường đang được tích chọn (checked) và phát sự kiện 'apply' kèm dữ liệu filter.
+ * Component cha sẽ nhận mảng này để build query gọi API.
+ */
 function applyFilters() {
   const activeFilters = filterState.value.filter((item) => item.checked)
   emit('apply', activeFilters)

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Core.DTO;
 using Core.Interfaces.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +31,7 @@ namespace Api.Controllers
        public virtual async Task<ActionResult<Response>> GetAll()
        {
            var items = await _baseService.GetAllAsync();
-           return Ok(new Response(true, null, 200) { Data = items });
+           return Success(items);
        }
 
        [HttpGet("{id:guid}")]
@@ -43,36 +39,36 @@ namespace Api.Controllers
        {
            var item = await _baseService.GetByIdAsync(id);
            if (item is null) 
-               return NotFound(new Response(false, "Không tìm thấy dữ liệu", 404));
+               return Failure("Không tìm thấy dữ liệu", 404);
 
-           return Ok(new Response(true, null, 200) { Data = item });
+           return Success(item);
        }
 
        [HttpPost]
        public virtual async Task<ActionResult<Response>> Create([FromBody] TDto dto)
        {
            if (dto is null) 
-               return BadRequest(new Response(false, "Dữ liệu không được để trống", 400));
+               return Failure("Dữ liệu không được để trống");
 
            var newId = await _baseService.CreateAsync(dto);
            if (newId == Guid.Empty) 
-               return BadRequest(new Response(false, "Không thể tạo mới bản ghi", 400));
+               return Failure("Không thể tạo mới bản ghi");
 
-           return StatusCode(201, new Response(true, "Thêm mới thành công", 201) { Data = dto });
+           return Success(dto, "Thêm mới thành công", 201);
        }
 
        [HttpPut("{id:guid}")]
        public virtual async Task<ActionResult<Response>> Update(Guid id, [FromBody] TDto dto)
        {
            if (dto is null) 
-               return BadRequest(new Response(false, "Dữ liệu không được để trống", 400));
+               return Failure("Dữ liệu không được để trống");
 
            // Lưu ý: Việc gán ID vào DTO nên được xử lý ở Service hoặc DTO phải có sẵn ID
            var updated = await _baseService.UpdateAsync(id, dto);
            if (!updated) 
-               return NotFound(new Response(false, "Không tìm thấy dữ liệu để cập nhật", 404));
+               return Failure("Không tìm thấy dữ liệu để cập nhật", 404);
 
-           return Ok(new Response(true, "Cập nhật thành công", 200) { Data = true });
+           return Success(true, "Cập nhật thành công");
        }
 
        [HttpDelete("{id:guid}")]
@@ -80,10 +76,20 @@ namespace Api.Controllers
        {
            var deleted = await _baseService.DeleteAsync(id);
            if (!deleted) 
-               return NotFound(new Response(false, "Không tìm thấy dữ liệu để xóa", 404));
+               return Failure("Không tìm thấy dữ liệu để xóa", 404);
 
-           return Ok(new Response(true, "Xóa thành công", 200) { Data = true });
+           return Success(true, "Xóa thành công");
        }
+
+        protected ActionResult<Response> Success(object? data = null, string? message = null, int statusCode = 200)
+        {
+            return StatusCode(statusCode, new Response(true, message, statusCode) { Data = data });
+        }
+
+        protected ActionResult<Response> Failure(string message, int statusCode = 400)
+        {
+            return StatusCode(statusCode, new Response(false, message, statusCode));
+        }
     }
 
 }

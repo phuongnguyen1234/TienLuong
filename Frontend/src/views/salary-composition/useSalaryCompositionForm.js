@@ -88,8 +88,7 @@ export default function useSalaryCompositionForm(props, { emit }) {
     setFieldValue,
     meta,
   } = useForm({
-    validationSchema, // Gán schema validation
-    // Các cờ cấu hình để không validate ngay khi gõ/blur mà đợi nhấn Lưu
+    validationSchema,
     validateOnBlur: false,
     validateOnChange: false,
     validateOnMount: false,
@@ -619,7 +618,7 @@ export default function useSalaryCompositionForm(props, { emit }) {
     formSubmitted.value = true // Đánh dấu form đã được submit để hiển thị lỗi
     const { valid } = await validateForm() // Chạy validation schema
     if (!valid || duplicateCodeError.value) {
-      showToast('Vui lòng kiểm tra lại các trường bị lỗi', 'error')
+      showToast('Vui lòng kiểm tra lại các trường bắt buộc', 'error')
       return
     }
 

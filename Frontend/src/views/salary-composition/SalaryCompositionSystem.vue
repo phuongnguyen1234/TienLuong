@@ -172,7 +172,12 @@
           <span v-if="data.CalculationMethod === 0" title="Tự động cộng tổng"
             >Tự động cộng tổng</span
           >
-          <span v-else :title="data.FormulaExpression">{{ data.FormulaExpression || '-' }}</span>
+          <span
+            v-else
+            :title="data.FormulaExpression || '-'"
+            class="formula-highlight-cell"
+            v-html="highlightFormula(data.FormulaExpression) || '-'"
+          ></span>
         </template>
         <template #IsDisplayedOnPayroll="{ data }">
           <span :title="getIsDisplayedOnPayrollText(data.IsDisplayedOnPayroll)">
@@ -273,6 +278,7 @@ import Pagination from '@/components/controls/pagination/Pagination.vue'
 import ConfirmationModal from '@/components/base/ConfirmationModal.vue'
 import FilterDrawer from '@/components/drawer/FilterDrawer.vue'
 import TableSetting from '@/components/base/TableSetting.vue'
+import { highlightFormula } from '@/utils/formula-highlighter'
 import { useToast } from '@/utils/use-toast'
 import salaryCompositionSystemService from '@/services/salary-composition-system-service'
 import {
@@ -308,6 +314,8 @@ const appliedFilters = ref([])
 
 const isCloneConfirmVisible = ref(false)
 const pendingCloneIds = ref([])
+
+const GRID_KEY = 'pa_salary_composition_system'
 
 const { showToast } = useToast()
 
@@ -568,22 +576,80 @@ const handleOpenTableSetting = (event) => {
   isTableSettingVisible.value = true
 }
 
-const handleColumnSettingsSave = (newSettings) => {
-  columnsConfig.value = newSettings
-  isTableSettingVisible.value = false
-  showToast('Lưu thiết lập cột thành công')
+const handleColumnSettingsSave = async (newSettings) => {
+  try {
+    await salaryCompositionSystemService.saveGridConfig(GRID_KEY, newSettings)
+    columnsConfig.value = newSettings
+    isTableSettingVisible.value = false
+    showToast('Lưu thiết lập cột thành công')
+  } catch (e) {
+    showToast('Lỗi khi lưu thiết lập cột', 'error')
+  }
 }
 
-const handleColumnSettingsReset = () => {
-  columnsConfig.value = getDefaultColumns()
-  showToast('Đã khôi phục thiết lập mặc định')
+const handleColumnSettingsReset = async () => {
+  try {
+    const defaults = getDefaultColumns()
+    await salaryCompositionSystemService.saveGridConfig(GRID_KEY, defaults)
+    columnsConfig.value = defaults
+    isTableSettingVisible.value = false
+    showToast('Đã khôi phục thiết lập mặc định')
+  } catch (e) {
+    showToast('Lỗi khi khôi phục thiết lập', 'error')
+  }
 }
 
-const handleHeaderClick = (column, event) => {
-  // Logic mở quick filter nếu cần
+/**
+ * Fetch cấu hình cột từ DB và áp dụng. Nếu chưa có, lưu cấu hình mặc định vào DB.
+ */
+async function fetchGridConfig() {
+  try {
+    const response = await salaryCompositionSystemService.getGridConfig(GRID_KEY)
+    if (response?.ConfigData && response.ConfigData !== '[]') {
+      const savedConfig = JSON.parse(response.ConfigData)
+      const defaultConfig = getDefaultColumns()
+      const defaultConfigMap = new Map(defaultConfig.map((c) => [c.key, c]))
+
+      // 1. Ưu tiên thứ tự từ Database
+      let finalConfig = savedConfig
+        .filter((savedCol) => defaultConfigMap.has(savedCol.key))
+        .map((savedCol) => {
+          const defaultCol = defaultConfigMap.get(savedCol.key)
+          let col = { ...defaultCol, ...savedCol }
+          if (col.hideable === false) col.visible = true
+          return col
+        })
+
+      // 2. Bổ sung cột mới
+      const savedKeys = new Set(savedConfig.map((c) => c.key))
+      const newCols = defaultConfig.filter((c) => !savedKeys.has(c.key))
+      finalConfig = [...finalConfig, ...newCols]
+
+      // 3. Sắp xếp ghim
+      finalConfig.sort((a, b) => {
+        if (a.key === 'empty_spacer') return 1
+        if (b.key === 'empty_spacer') return -1
+        const aP = a.pinned === 'left' ? 1 : 0
+        const bP = b.pinned === 'left' ? 1 : 0
+        return bP - aP
+      })
+
+      columnsConfig.value = finalConfig
+    } else {
+      // Nếu chưa có cấu hình trong DB, thực hiện lưu cấu hình mặc định
+      const defaultConfig = getDefaultColumns()
+      await salaryCompositionSystemService.saveGridConfig(GRID_KEY, defaultConfig)
+      columnsConfig.value = defaultConfig
+    }
+  } catch (e) {
+    console.error('Lỗi khi tải hoặc lưu cấu hình grid hệ thống:', e)
+    // Fallback về mặc định
+    columnsConfig.value = getDefaultColumns()
+  }
 }
 
 onMounted(() => {
+  fetchGridConfig()
   fetchData()
 })
 </script>
@@ -616,5 +682,11 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Style cho highlight công thức trong table */
+.formula-highlight-cell :deep(span) {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px;
 }
 </style>

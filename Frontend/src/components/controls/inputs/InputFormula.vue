@@ -1,17 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import Prism from 'prismjs'
-import 'prismjs/themes/prism.css'
-
-// Cấu hình Prism để nhận diện mã thành phần lương [MA_SO]
-Prism.languages.formula = {
-  variable: {
-    pattern: /\[[a-zA-Z0-9_]+\]/,
-    alias: 'property',
-  },
-  operator: /[+\-*/()]/,
-  number: /\b\d+(\.\d+)?\b/,
-}
+import { highlightFormula } from '@/utils/formula-highlighter'
 
 const props = defineProps({
   modelValue: {
@@ -83,8 +72,7 @@ function setTab(tab) {
  * Đồng bộ highlight khi text thay đổi
  */
 function updateHighlight() {
-  highlightedCode.value =
-    Prism.highlight(props.modelValue, Prism.languages.formula, 'formula') + '\n' // Thêm newline để khớp với textarea
+  highlightedCode.value = highlightFormula(props.modelValue) + '\n'
 }
 
 /**

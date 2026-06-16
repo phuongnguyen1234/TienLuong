@@ -311,7 +311,12 @@
             <span v-if="data.CalculationMethod === 0" title="Tự động cộng tổng">
               Tự động cộng tổng
             </span>
-            <span v-else :title="data.FormulaExpression">{{ data.FormulaExpression || '-' }}</span>
+            <span
+              v-else
+              :title="data.FormulaExpression || '-'"
+              class="formula-highlight-cell"
+              v-html="highlightFormula(data.FormulaExpression) || '-'"
+            ></span>
           </template>
           <template #ScStatus="{ data }">
             <div
@@ -615,6 +620,12 @@
   background-color: var(--color-warning);
 }
 
+/* Style cho highlight công thức trong table */
+.formula-highlight-cell :deep(span) {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 1024px) {
   .content_body_actions {
@@ -732,5 +743,6 @@ const {
   handleHeaderClick,
   handleSort,
   handleTogglePin,
+  highlightFormula,
 } = useSalaryComposition()
 </script>

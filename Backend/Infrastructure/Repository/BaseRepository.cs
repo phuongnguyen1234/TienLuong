@@ -71,6 +71,14 @@ namespace Infrastructure.Repository
             );
 
             SqlMapper.SetTypeMap(
+                typeof(GridConfig),
+                new CustomPropertyTypeMap(
+                    typeof(GridConfig),
+                    (type, columnName) => type.GetProperty(columnName.ToPascalCase())
+                )
+            );
+
+            SqlMapper.SetTypeMap(
                 typeof(SalaryComposition),
                 new CustomPropertyTypeMap(
                     typeof(SalaryComposition),
@@ -108,6 +116,11 @@ namespace Infrastructure.Repository
         // Hàm tiện ích để đặt tên bảng và cột trong MySQL với dấu backticks để tránh lỗi với từ khóa hoặc tên có dấu cách
         private static string MysqlQuote(string identifier) => $"`{identifier}`";
 
+        // Gom các template SQL vào một nơi để dễ quản lý trong class
+        private string SqlSelectById => $"SELECT * FROM {MysqlQuote(TableName)} WHERE {MysqlQuote(KeyName.ToSnakeCase())} = @Id";
+        private string SqlSelectAll => $"SELECT * FROM {MysqlQuote(TableName)}";
+        private string SqlDeleteById => $"DELETE FROM {MysqlQuote(TableName)} WHERE {MysqlQuote(KeyName.ToSnakeCase())} = @Id";
+
         /// <summary>
         /// Lấy một đối tượng Entity theo ID.
         /// </summary>
@@ -125,11 +138,8 @@ namespace Infrastructure.Repository
             else
                 connection.Open();
 
-            var table = MysqlQuote(TableName);
-            var key = MysqlQuote(KeyName.ToSnakeCase());
-            var sql = $"SELECT * FROM {table} WHERE {key} = @Id";
             // 3. Thực thi truy vấn và trả về đối tượng đầu tiên tìm thấy hoặc null.
-            return await connection.QuerySingleOrDefaultAsync<T>(sql, new { Id = id });
+            return await connection.QuerySingleOrDefaultAsync<T>(SqlSelectById, new { Id = id });
         }
 
         /// <summary>
@@ -148,9 +158,7 @@ namespace Infrastructure.Repository
             else
                 connection.Open();
             // 3. Thực thi truy vấn SELECT * và trả về danh sách các đối tượng.
-            var table = MysqlQuote(TableName);
-            var sql = $"SELECT * FROM {table}";
-            return await connection.QueryAsync<T>(sql);
+            return await connection.QueryAsync<T>(SqlSelectAll);
         }
 
         /// <summary>
@@ -305,10 +313,7 @@ namespace Infrastructure.Repository
         /// Created by Phuong 25/02/2026
         protected virtual async Task<bool> DeleteAsync(Guid id, IDbConnection connection, IDbTransaction? transaction)
         {
-            var table = MysqlQuote(TableName);
-            var key = MysqlQuote(KeyName.ToSnakeCase());
-            var sql = $"DELETE FROM {table} WHERE {key} = @Id";
-            var affected = await connection.ExecuteAsync(sql, new { Id = id }, transaction: transaction);
+            var affected = await connection.ExecuteAsync(SqlDeleteById, new { Id = id }, transaction: transaction);
             return affected > 0;
         }
     }

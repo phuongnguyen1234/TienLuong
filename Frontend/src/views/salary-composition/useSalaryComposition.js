@@ -21,6 +21,7 @@ import {
 } from '@/utils/salary-composition-helpers.js'
 import { FilterOperation } from '@/models/filter-operation.js'
 import organizationService from '@/services/organization-service'
+import { highlightFormula } from '@/utils/formula-highlighter'
 
 export default function useSalaryComposition() {
   const route = useRoute()
@@ -104,7 +105,7 @@ export default function useSalaryComposition() {
   const pageSize = ref(15) // Expose
 
   // Key dùng để lưu cấu hình cột vào LocalStorage.
-  const SALARY_COMPOSITION_COLUMNS_CONFIG_STORAGE_KEY = 'salary_composition_column_settings'
+  const GRID_KEY = 'pa_salary_composition'
 
   /**
    * Trả về cấu hình cột mặc định cho bảng thành phần lương
@@ -265,52 +266,56 @@ export default function useSalaryComposition() {
   ]
 
   /**
-   * Load cấu hình cột từ LocalStorage và hợp nhất với cấu hình mặc định
-   * @returns {Array} Cấu hình cột sau khi hợp nhất và sắp xếp
+   * Fetch cấu hình cột từ DB và áp dụng. Nếu chưa có, lưu cấu hình mặc định vào DB.
    */
-  const loadSalaryCompositionColumnsConfig = () => {
+  const fetchGridConfig = async () => {
     const defaultConfig = getDefaultColumns()
-    const savedJSON = localStorage.getItem(SALARY_COMPOSITION_COLUMNS_CONFIG_STORAGE_KEY)
+    try {
+      const response = await salaryCompositionService.getGridConfig(GRID_KEY)
+      const savedJSON = response?.ConfigData
 
-    if (savedJSON) {
-      try {
+      if (savedJSON && savedJSON !== '[]') {
         const savedConfig = JSON.parse(savedJSON)
-        const savedConfigMap = new Map(savedConfig.map((c) => [c.key, c]))
+        const defaultConfigMap = new Map(defaultConfig.map((c) => [c.key, c]))
 
-        // Lặp qua cấu hình mặc định để giữ nguyên cấu trúc và thứ tự,
-        // đồng thời cập nhật các thuộc tính đã lưu
-        const finalConfig = defaultConfig.map((defaultCol) => {
-          const savedCol = savedConfigMap.get(defaultCol.key)
-          let col = savedCol ? { ...defaultCol, ...savedCol } : defaultCol
-          // Nếu cột được đánh dấu không thể ẩn, luôn giữ visible = true
-          if (col.hideable === false) col.visible = true
-          return col
+        // 1. Lấy các cột từ Database để giữ nguyên thứ tự (vị trí) đã lưu
+        let finalConfig = savedConfig
+          .filter((savedCol) => defaultConfigMap.has(savedCol.key))
+          .map((savedCol) => {
+            const defaultCol = defaultConfigMap.get(savedCol.key)
+            let col = { ...defaultCol, ...savedCol }
+            if (col.hideable === false) col.visible = true
+            return col
+          })
+
+        // 2. Bổ sung các cột mới có trong code nhưng chưa có trong DB (phòng trường hợp cập nhật code)
+        const savedKeys = new Set(savedConfig.map((c) => c.key))
+        const newCols = defaultConfig.filter((c) => !savedKeys.has(c.key))
+        finalConfig = [...finalConfig, ...newCols]
+
+        // 3. Sắp xếp: Đưa cột ghim lên đầu, nhưng vẫn giữ thứ tự tương đối của chúng
+        finalConfig.sort((a, b) => {
+          if (a.key === 'empty_spacer') return 1
+          if (b.key === 'empty_spacer') return -1
+          const aP = a.pinned === 'left' ? 1 : 0
+          const bP = b.pinned === 'left' ? 1 : 0
+          return bP - aP
         })
 
-        // Sanitize: Đảm bảo không phải tất cả các cột hiển thị đều được ghim
-        const visibleCols = finalConfig.filter((c) => c.visible)
-        if (visibleCols.length > 0 && visibleCols.every((c) => c.pinned)) {
-          visibleCols[visibleCols.length - 1].pinned = false
-        }
-
-        // Sắp xếp: Cột ghim (pinned) luôn lên đầu để hiển thị đúng trong Table
-        return finalConfig.sort((a, b) => {
-          const aPinned = a.pinned === 'left'
-          const bPinned = b.pinned === 'left'
-          if (aPinned && !bPinned) return -1
-          if (!aPinned && bPinned) return 1
-          return 0
-        })
-      } catch (e) {
-        console.error('Không thể phân tích cài đặt cột, sử dụng cài đặt mặc định.', e)
-        localStorage.removeItem(SALARY_COMPOSITION_COLUMNS_CONFIG_STORAGE_KEY)
+        columnsConfig.value = finalConfig
+      } else {
+        // Nếu chưa có cấu hình trong DB, thực hiện lưu cấu hình mặc định
+        await salaryCompositionService.saveGridConfig(GRID_KEY, defaultConfig)
+        columnsConfig.value = defaultConfig
       }
+    } catch (e) {
+      console.error('Lỗi khi tải hoặc lưu cấu hình cột từ DB:', e)
+      // Fallback về mặc định nếu có lỗi xảy ra
+      columnsConfig.value = defaultConfig
     }
-
-    return defaultConfig
   }
 
-  const columnsConfig = ref(loadSalaryCompositionColumnsConfig())
+  const columnsConfig = ref(getDefaultColumns())
 
   // Cấu hình danh sách các cột có thể lọc cho FilterDrawer
   const filterDrawerColumns = computed(() => {
@@ -505,9 +510,8 @@ export default function useSalaryComposition() {
 
       const response = await salaryCompositionService.bulkDelete(idsToDelete)
 
-      // Lấy số lượng bản ghi đã xóa từ thuộc tính Data (viết hoa theo Backend)
-      // Nếu service đã unwrap (trả về trực tiếp giá trị) thì lấy chính response
-      const deletedCount = response !== undefined ? response : response
+      // Lấy số lượng bản ghi đã xóa từ thuộc tính Data
+      const deletedCount = response
 
       if (deletedCount > 0) {
         if (deletingItem.value) {
@@ -775,11 +779,16 @@ export default function useSalaryComposition() {
    * Lưu cấu hình cột mới vào LocalStorage và cập nhật lại `columnsConfig`.
    * Hiển thị toast thông báo thành công.
    * @param {Array<Object>} newSettings - Cấu hình cột mới.
-   */ // Expose
-  function handleColumnSettingsSave(newSettings) {
-    columnsConfig.value = newSettings
-    localStorage.setItem(SALARY_COMPOSITION_COLUMNS_CONFIG_STORAGE_KEY, JSON.stringify(newSettings))
-    showToast('Lưu thiết lập bảng thành công')
+   */
+  async function handleColumnSettingsSave(newSettings) {
+    try {
+      await salaryCompositionService.saveGridConfig(GRID_KEY, newSettings)
+      columnsConfig.value = newSettings
+      showToast('Lưu thiết lập bảng thành công')
+      isTableSettingVisible.value = false
+    } catch (e) {
+      showToast('Không thể lưu thiết lập bảng', 'error')
+    }
   }
 
   /**
@@ -787,11 +796,15 @@ export default function useSalaryComposition() {
    * Cập nhật lại `columnsConfig` và hiển thị toast thông báo.
    * Đảm bảo các cột không thể ẩn vẫn hiển thị.
    */
-  function handleColumnSettingsReset() {
-    // Expose
-    columnsConfig.value = getDefaultColumns()
-    localStorage.removeItem(SALARY_COMPOSITION_COLUMNS_CONFIG_STORAGE_KEY)
-    showToast('Đã khôi phục thiết lập mặc định')
+  async function handleColumnSettingsReset() {
+    try {
+      const defaults = getDefaultColumns()
+      await salaryCompositionService.saveGridConfig(GRID_KEY, defaults)
+      columnsConfig.value = defaults
+      showToast('Đã khôi phục thiết lập mặc định')
+    } catch (e) {
+      showToast('Không thể khôi phục thiết lập', 'error')
+    }
   }
 
   /**
@@ -846,7 +859,7 @@ export default function useSalaryComposition() {
   /**
    * Xử lý sự kiện ghim/bỏ ghim cột. // Expose
    */
-  function handleTogglePin(column) {
+  async function handleTogglePin(column) {
     const col = columnsConfig.value.find((c) => c.key === column.key)
     if (col) {
       if (col.pinned) {
@@ -859,10 +872,8 @@ export default function useSalaryComposition() {
         }
         col.pinned = 'left'
       }
-      localStorage.setItem(
-        SALARY_COMPOSITION_COLUMNS_CONFIG_STORAGE_KEY,
-        JSON.stringify(columnsConfig.value),
-      )
+      // Lưu vào DB ngay khi ghim
+      await salaryCompositionService.saveGridConfig(GRID_KEY, columnsConfig.value)
       // Buộc Table render lại vị trí sticky
       columnsConfig.value = [...columnsConfig.value]
       showToast(`Đã ${col.pinned ? 'ghim' : 'bỏ ghim'} cột ${col.label}`)
@@ -874,6 +885,8 @@ export default function useSalaryComposition() {
   }
 
   onMounted(() => {
+    // Load cấu hình cột
+    fetchGridConfig()
     // gọi API lấy dữ liệu TPL
     fetchData()
 
@@ -943,5 +956,6 @@ export default function useSalaryComposition() {
     handleHeaderClick,
     handleSort,
     handleTogglePin,
+    highlightFormula,
   }
 }

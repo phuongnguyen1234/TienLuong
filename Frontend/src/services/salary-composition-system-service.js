@@ -36,6 +36,26 @@ class SalaryCompositionSystemService extends BaseService {
   async bulkClone(ids) {
     return await apiClient.post(`${this.controllerEndpoint}/bulk-clone`, ids)
   }
+
+  /**
+   * Lấy cấu hình cột từ DB
+   * @param {string} gridKey
+   */
+  async getGridConfig(gridKey) {
+    return await apiClient.get(`${this.controllerEndpoint}/grid-config/${gridKey}`)
+  }
+
+  /**
+   * Lưu cấu hình cột vào DB
+   * @param {string} gridKey
+   * @param {Array|Object} configData
+   */
+  async saveGridConfig(gridKey, configData) {
+    return await apiClient.post(`${this.controllerEndpoint}/grid-config`, {
+      gridKey: gridKey,
+      configData: JSON.stringify(configData),
+    })
+  }
 }
 
 export default new SalaryCompositionSystemService()

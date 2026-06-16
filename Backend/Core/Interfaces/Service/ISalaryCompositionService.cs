@@ -1,3 +1,4 @@
+using Core.Entities;
 using Core.DTO;
 using System;
 using System.Collections.Generic;
@@ -47,5 +48,15 @@ namespace Core.Interfaces.Service
         /// </summary>
         /// <param name="name">Tên TPL</param>
         Task<string> GenerateCodeAsync(string name);
+
+        /// <summary>
+        /// Lấy cấu hình cột của grid
+        /// </summary>
+        Task<GridConfigDTO?> GetGridConfigAsync(string gridKey);
+
+        /// <summary>
+        /// Lưu cấu hình cột của grid
+        /// </summary>
+        Task<bool> SaveGridConfigAsync(GridConfigDTO dto);
     }
 }

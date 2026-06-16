@@ -90,6 +90,26 @@ class SalaryCompositionService extends BaseService {
   }
 
   /**
+   * Lấy cấu hình cột từ DB
+   * @param {string} gridKey
+   */
+  async getGridConfig(gridKey) {
+    return await apiClient.get(`${this.controllerEndpoint}/grid-config/${gridKey}`)
+  }
+
+  /**
+   * Lưu cấu hình cột vào DB
+   * @param {string} gridKey
+   * @param {Array|Object} configData
+   */
+  async saveGridConfig(gridKey, configData) {
+    return await apiClient.post(`${this.controllerEndpoint}/grid-config`, {
+      gridKey: gridKey,
+      configData: JSON.stringify(configData),
+    })
+  }
+
+  /**
    * Helper ánh xạ dữ liệu form (snake_case) sang DTO (camelCase) theo chuẩn Backend.
    * @param {Object} data - Dữ liệu thô từ form
    * @private

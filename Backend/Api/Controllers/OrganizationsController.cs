@@ -1,8 +1,6 @@
 using Core.DTO;
 using Core.Interfaces.Service;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Api.Controllers
 {
@@ -22,7 +20,7 @@ namespace Api.Controllers
         public async Task<ActionResult<Response>> GetOrganizationTree()
         {
             var tree = await _organizationService.GetOrganizationTreeAsync();
-            return Ok(new Response(true, null, 200) { Data = tree });
+            return Success(tree);
         }
     }
 }

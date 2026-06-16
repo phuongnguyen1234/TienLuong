@@ -56,5 +56,15 @@ namespace Core.Interfaces.Repository
         /// <param name="code">Mã cần kiểm tra</param>
         /// <param name="excludeId">ID bản ghi loại trừ (khi sửa)</param>
         Task<bool> CheckCodeDuplicateAsync(string code, Guid? excludeId);
+
+        /// <summary>
+        /// Lấy cấu hình cột theo GridKey
+        /// </summary>
+        Task<GridConfig?> GetGridConfigAsync(string gridKey);
+
+        /// <summary>
+        /// Lưu hoặc cập nhật cấu hình cột
+        /// </summary>
+        Task<bool> SaveGridConfigAsync(GridConfig config);
     }
 }

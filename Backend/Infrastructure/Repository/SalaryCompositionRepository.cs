@@ -267,6 +267,33 @@ namespace Infrastructure.Repository
         }
 
         /// <summary>
+        /// Lấy cấu hình cột theo GridKey
+        /// </summary>
+        public async Task<GridConfig?> GetGridConfigAsync(string gridKey)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var sql = SqlExtension.GetQuery("GridConfig", "GetConfig");
+            return await connection.QueryFirstOrDefaultAsync<GridConfig>(
+                sql, 
+                new { p_grid_key = gridKey }, 
+                commandType: CommandType.StoredProcedure);
+        }
+
+        /// <summary>
+        /// Lưu hoặc cập nhật cấu hình cột
+        /// </summary>
+        public async Task<bool> SaveGridConfigAsync(GridConfig config)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var sql = SqlExtension.GetQuery("GridConfig", "UpsertConfig");
+            var affected = await connection.ExecuteAsync(
+                sql, 
+                new { p_grid_key = config.GridKey, p_config_data = config.ConfigData }, 
+                commandType: CommandType.StoredProcedure);
+            return affected > 0;
+        }
+
+        /// <summary>
         /// Lấy danh sách các thành phần lương dưới dạng lookup (rút gọn) có sử dụng IMemoryCache.
         /// </summary>
         /// <param name="searchTerm">Từ khóa tìm kiếm (tùy chọn). Nếu có searchTerm, sẽ không sử dụng cache hoặc cache theo key search.</param>

@@ -49,5 +49,31 @@ namespace Core.Services
             var result = await _repository.BulkCloneAsync(systemIds);
             return result;
         }
+
+        /// <summary>
+        /// Lấy cấu hình Grid từ Repository
+        /// </summary>
+        public async Task<GridConfigDTO?> GetGridConfigAsync(string gridKey)
+        {
+            var config = await _repository.GetGridConfigAsync(gridKey);
+            if (config == null) return null;
+
+            return new GridConfigDTO 
+            { 
+                GridKey = config.GridKey, 
+                ConfigData = config.ConfigData 
+            };
+        }
+
+        /// <summary>
+        /// Lưu cấu hình Grid xuống Repository
+        /// </summary>
+        public async Task<bool> SaveGridConfigAsync(GridConfigDTO dto)
+        {
+            if (dto == null) return false;
+
+            var entity = new GridConfig { GridKey = dto.GridKey, ConfigData = dto.ConfigData };
+            return await _repository.SaveGridConfigAsync(entity);
+        }
     }
 }

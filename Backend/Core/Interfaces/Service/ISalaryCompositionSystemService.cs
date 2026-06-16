@@ -19,5 +19,15 @@ namespace Core.Interfaces.Service
         /// </summary>
         /// <param name="systemIds">Danh sách ID hệ thống</param>
         Task<int> BulkCloneAsync(List<Guid> systemIds);
+
+        /// <summary>
+        /// Lấy cấu hình cột của grid
+        /// </summary>
+        Task<GridConfigDTO?> GetGridConfigAsync(string gridKey);
+
+        /// <summary>
+        /// Lưu cấu hình cột của grid
+        /// </summary>
+        Task<bool> SaveGridConfigAsync(GridConfigDTO dto);
     }
 }

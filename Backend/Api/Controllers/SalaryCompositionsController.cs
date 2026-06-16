@@ -1,7 +1,6 @@
 using Core.DTO;
 using Core.Interfaces.Service;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace Api.Controllers
 {
@@ -28,7 +27,7 @@ namespace Api.Controllers
             [FromQuery] int pageSize = 15)
         {
             var result = await _salaryService.GetPagingAsync(searchTerm, filters, pageIndex, pageSize);
-            return Ok(new Response(true, null, 200, result));
+            return Success(result);
         }
 
         /// <summary>
@@ -39,10 +38,10 @@ namespace Api.Controllers
         public async Task<ActionResult<Response>> BulkDelete([FromBody] List<Guid> ids)
         {
             if (ids == null || ids.Count == 0)
-                return BadRequest(new Response(false, "Danh sách ID không được để trống", 400));
+                return Failure("Danh sách ID không được để trống");
 
             var result = await _salaryService.BulkDeleteAsync(ids);
-            return Ok(new Response(true, "Xóa hàng loạt thành công", 200, result));
+            return Success(result, "Xóa hàng loạt thành công");
         }
 
         /// <summary>
@@ -52,11 +51,11 @@ namespace Api.Controllers
         public async Task<ActionResult<Response>> BulkUpdateStatus([FromBody] List<Guid> ids, [FromQuery] int status)
         {
             if (ids == null || ids.Count == 0)
-                return BadRequest(new Response(false, "Danh sách ID không được để trống", 400));
+                return Failure("Danh sách ID không được để trống");
 
             var result = await _salaryService.BulkUpdateStatusAsync(ids, status);
             string message = status == 0 ? "Tiếp tục theo dõi thành công" : "Ngừng theo dõi thành công";
-            return Ok(new Response(true, message, 200, result));
+            return Success(result, message);
         }
 
         /// <summary>
@@ -66,7 +65,7 @@ namespace Api.Controllers
         public async Task<ActionResult<Response>> GetLookup([FromQuery] string? searchTerm)
         {
             var result = await _salaryService.GetLookupsAsync(searchTerm);
-            return Ok(new Response(true, null, 200, result));
+            return Success(result);
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace Api.Controllers
         public async Task<ActionResult<Response>> CheckDuplicate([FromQuery] string code, [FromQuery] Guid? excludeId)
         {
             var isDuplicate = await _salaryService.CheckCodeDuplicateAsync(code, excludeId);
-            return Ok(new Response(true, null, 200, isDuplicate));
+            return Success(isDuplicate);
         }
 
         /// <summary>
@@ -86,7 +85,27 @@ namespace Api.Controllers
         public async Task<ActionResult<Response>> GenerateCode([FromQuery] string name)
         {
             var code = await _salaryService.GenerateCodeAsync(name);
-            return Ok(new Response(true, null, 200, code));
+            return Success(code);
+        }
+
+        /// <summary>
+        /// Lấy cấu hình cột của grid
+        /// </summary>
+        [HttpGet("grid-config/{gridKey}")]
+        public async Task<ActionResult<Response>> GetGridConfig([FromRoute] string gridKey)
+        {
+            var result = await _salaryService.GetGridConfigAsync(gridKey);
+            return Success(result);
+        }
+
+        /// <summary>
+        /// Lưu cấu hình cột của grid (Thêm mới hoặc Cập nhật)
+        /// </summary>
+        [HttpPost("grid-config")]
+        public async Task<ActionResult<Response>> SaveGridConfig([FromBody] GridConfigDTO configDto)
+        {
+            var result = await _salaryService.SaveGridConfigAsync(configDto);
+            return Success(result, "Lưu cấu hình thành công");
         }
     }
 }

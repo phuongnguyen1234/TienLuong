@@ -20,5 +20,15 @@ namespace Core.Interfaces.Repository
         /// </summary>
         /// <param name="systemIds">Danh sách ID TPL hệ thống</param>
         Task<int> BulkCloneAsync(List<Guid> systemIds);
+
+        /// <summary>
+        /// Lấy cấu hình cột theo GridKey
+        /// </summary>
+        Task<GridConfig?> GetGridConfigAsync(string gridKey);
+
+        /// <summary>
+        /// Lưu hoặc cập nhật cấu hình cột
+        /// </summary>
+        Task<bool> SaveGridConfigAsync(GridConfig config);
     }
 }
