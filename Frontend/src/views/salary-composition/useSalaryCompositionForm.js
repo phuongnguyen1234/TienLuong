@@ -655,14 +655,12 @@ export default function useSalaryCompositionForm(props, { emit }) {
       fetchCompositionLookup()
     } catch (error) {
       console.error('Lỗi khi lưu thành phần lương:', error)
-      if (
-        error.response &&
-        error.response.status === 400 &&
-        error.response.data &&
-        error.response.data.data
-      ) {
+      const responseData = error.response?.data
+      const serverUserMsg = responseData?.UserMessage
+
+      if (error.response && error.response.status === 400 && responseData?.data) {
         // Xử lý lỗi validation trả về từ Server (ví dụ: trùng mã do Race Condition)
-        const backendErrors = error.response.data.data
+        const backendErrors = responseData.data
         const mappedErrors = {}
         for (const key in backendErrors) {
           if (Object.prototype.hasOwnProperty.call(backendErrors, key)) {
@@ -671,9 +669,9 @@ export default function useSalaryCompositionForm(props, { emit }) {
           }
         }
         setErrors(mappedErrors)
-        showToast('Vui lòng kiểm tra lại thông tin nhập', 'error')
+        showToast(serverUserMsg || 'Vui lòng kiểm tra lại thông tin nhập', 'error')
       } else {
-        showToast('Có lỗi xảy ra khi lưu thành phần lương', 'error')
+        showToast(serverUserMsg || 'Có lỗi xảy ra khi lưu thành phần lương', 'error')
       }
     }
   }

@@ -310,7 +310,8 @@ export default function useSalaryComposition() {
       }
     } catch (e) {
       console.error('Lỗi khi tải hoặc lưu cấu hình cột từ DB:', e)
-      // Fallback về mặc định nếu có lỗi xảy ra
+      const serverMsg = e.response?.data?.UserMessage
+      if (serverMsg) showToast(serverMsg, 'error')
       columnsConfig.value = defaultConfig
     }
   }
@@ -530,7 +531,8 @@ export default function useSalaryComposition() {
       }
     } catch (error) {
       console.error('Error during delete operation:', error) // Thêm dòng này để kiểm tra lỗi
-      showToast('Có lỗi xảy ra khi xóa dữ liệu', 'error')
+      const serverMsg = error.response?.data?.UserMessage
+      showToast(serverMsg || 'Có lỗi xảy ra khi xóa dữ liệu', 'error')
     } finally {
       isDeleteModalVisible.value = false
       deletingItem.value = null
@@ -594,7 +596,8 @@ export default function useSalaryComposition() {
         selectedIds.value = []
       }
     } catch (error) {
-      showToast('Có lỗi xảy ra khi cập nhật trạng thái', 'error')
+      const serverMsg = error.response?.data?.UserMessage
+      showToast(serverMsg || 'Có lỗi xảy ra khi cập nhật trạng thái', 'error')
     } finally {
       isStatusConfirmVisible.value = false
     }
@@ -660,7 +663,8 @@ export default function useSalaryComposition() {
       showToast(`Đã thay đổi trạng thái theo dõi cho: ${item.ScName}`)
       fetchData()
     } catch (error) {
-      showToast('Không thể cập nhật trạng thái', 'error')
+      const serverMsg = error.response?.data?.UserMessage
+      showToast(serverMsg || 'Không thể cập nhật trạng thái', 'error')
     }
   }
 
@@ -721,7 +725,8 @@ export default function useSalaryComposition() {
       totalRecords.value = result.TotalItems || 0
       // 6. Xử lý lỗi nếu API trả về lỗi.
     } catch (error) {
-      showToast('Không thể tải dữ liệu thành phần lương', 'error')
+      const serverMsg = error.response?.data?.UserMessage
+      showToast(serverMsg || 'Không thể tải dữ liệu thành phần lương', 'error')
     } finally {
       isLoading.value = false
     }
@@ -787,7 +792,8 @@ export default function useSalaryComposition() {
       showToast('Lưu thiết lập bảng thành công')
       isTableSettingVisible.value = false
     } catch (e) {
-      showToast('Không thể lưu thiết lập bảng', 'error')
+      const serverMsg = e.response?.data?.UserMessage
+      showToast(serverMsg || 'Không thể lưu thiết lập bảng', 'error')
     }
   }
 
@@ -803,7 +809,8 @@ export default function useSalaryComposition() {
       columnsConfig.value = defaults
       showToast('Đã khôi phục thiết lập mặc định')
     } catch (e) {
-      showToast('Không thể khôi phục thiết lập', 'error')
+      const serverMsg = e.response?.data?.UserMessage
+      showToast(serverMsg || 'Không thể khôi phục thiết lập', 'error')
     }
   }
 

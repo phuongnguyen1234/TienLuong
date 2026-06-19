@@ -522,7 +522,8 @@ async function fetchData() {
     systemCompositions.value = response.Items || []
     totalItems.value = response.TotalItems || 0
   } catch (error) {
-    showToast('Không thể tải dữ liệu hệ thống', 'error')
+    const serverMsg = error.response?.data?.UserMessage
+    showToast(serverMsg || 'Không thể tải dữ liệu hệ thống', 'error')
   } finally {
     isLoading.value = false
   }
@@ -559,7 +560,8 @@ const confirmClone = async () => {
       fetchData()
     }
   } catch (error) {
-    showToast('Có lỗi xảy ra khi đưa thành phần lương vào sử dụng', 'error')
+    const serverMsg = error.response?.data?.UserMessage
+    showToast(serverMsg || 'Có lỗi xảy ra khi đưa thành phần lương vào sử dụng', 'error')
   } finally {
     isCloneConfirmVisible.value = false
     pendingCloneIds.value = []

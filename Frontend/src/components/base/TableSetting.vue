@@ -102,9 +102,7 @@ const localColumns = ref([])
 // Hàm khởi tạo dữ liệu từ props
 function initData() {
   if (props.columns && props.columns.length > 0) {
-    localColumns.value = JSON.parse(JSON.stringify(props.columns)).map((col) => ({
-      ...col,
-    }))
+    localColumns.value = JSON.parse(JSON.stringify(props.columns))
   }
 }
 
